@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 typedef struct Employee {
     int id;
     char name[100];
@@ -84,30 +85,34 @@ void printNode(Node* head) {
 }
     //Case 3
 Node* deleteNode(Node* head, int valueID) {
-        if (head == NULL) {
-            printf("Danh sach trong!\n");
-            return NULL;
-        }
+    if (head == NULL) {
+        printf("Danh sach trong!\n");
+        return NULL;
+    }
     Node* temp = head;
-        if (temp->data.id == valueID) {
-            Node* deleteNode = temp;
-            temp = temp->next;
+    if (temp->data.id == valueID) {
+        Node* deleteNode = temp;
+        temp = temp->next;
+        free(deleteNode);
+        printf("Xoa thanh cong!\n");
+        return temp;
+    }
+
+    while (temp->next != NULL) {
+        if (temp->next->data.id == valueID) {
+            Node* deleteNode = temp->next;
+            temp->next = temp->next->next;
             free(deleteNode);
-            return temp;
-        }else {
-            while (temp->next != NULL) {
-                if (temp->next->data.id == valueID) {
-                    printf("Xoa thanh cong!\n");
-                    Node* deleteNode = temp->next;
-                    temp->next = temp->next->next;
-                    free(deleteNode);
-                    return head;
-                }
-            }
+            printf("Xoa thanh cong!\n");
+            return head;
         }
-    printf("Khong tim thay sinh vien nay!\n");
+        temp = temp->next;
+    }
+
+    printf("Khong tim thay nhan vien nay!\n");
     return head;
 }
+
     //Case 4
 void updateNode(Node* head, int valueID) {
     if (head == NULL) {
@@ -155,30 +160,52 @@ void updateNode(Node* head, int valueID) {
     }
 }
     //Case 5
-Node* offNode(Node* head, char* value) {
-    if (head == NULL) {
+DoubleNode* offNode(Node** head, DoubleNode* headDouble, char* value) {
+    if (*head == NULL) {
         printf("Danh sach trong!\n");
-        return NULL;
+        return headDouble;
     }
-    Node* temp = head;
+    Node* temp = *head;
     while (temp != NULL) {
         if (strcmp(temp->data.name, value) == 0) {
-            addDoubleNode(head, temp->data);
-            printf("Nhan vien nay da di chuyen!\n");
-            return head;
+            headDouble = addDoubleNode(headDouble, temp->data);
+            *head = deleteNode(*head, temp->data.id);
+            printf("Nhan vien da duoc chuyen vao danh sach nghi viec!\n");
+            return headDouble;
         }
         temp = temp->next;
     }
     printf("Khong tim thay nhan vien nay!\n");
-    return head;
+    return headDouble;
 }
     //Case 6
-void sortNode(Node* head) {
+    //Case 7
+void searchByName(Node* head, const char* name) {
     if (head == NULL) {
         printf("Danh sach trong!\n");
         return;
     }
+
+    Node* temp = head;
+    int found = 0;
+    while (temp != NULL) {
+        if (strstr(temp->data.name, name) != NULL) {
+            printf("\n--- Thong tin nhan vien tim thay ---\n");
+            printf("ID: %d\n", temp->data.id);
+            printf("Ten: %s\n", temp->data.name);
+            printf("Phong ban: %s\n", temp->data.division);
+            printf("Tuoi: %d\n", temp->data.age);
+            found = 1;
+        }
+        temp = temp->next;
+    }
+
+    if (!found) {
+        printf("Khong tim thay nhan vien co ten '%s'\n", name);
+    }
 }
+
+
 int main(){
     int choice;
     Node* head = NULL;
@@ -246,14 +273,18 @@ int main(){
                 printf("Moi ban nhap ten nhan vien muon di chuyen: ");
                 fgets(value, 100, stdin);
                 value[strcspn(value, "\n")] = '\0';
-
-                headDouble = offNode(head, value);
-                printf("%s", headDouble->data.name);
-
+                headDouble = offNode(&head, headDouble, value);
                 break;
             case 6:
                 break;
             case 7:
+                char nameSearch[100];
+                getchar();
+                printf("Nhap ten nhan vien can tim: ");
+                fgets(nameSearch, 100, stdin);
+                nameSearch[strcspn(nameSearch, "\n")] = '\0';
+
+                searchByName(head, nameSearch);
                 break;
             case 8:
                 printf("Thoat chuong trinh!\n");
